@@ -42,7 +42,7 @@ vector<double> TimeDelayNetwork::classify() {
 	vector<double> output, connections = timeSteps;
 	if (timeSteps.size() == inputSize) {
 		// calculate activations from bottom up
-		for (int i = 0; i < (layers.size() - 1); i++) {
+		for (int i = 0; i < (layers.size()); i++) {
 			vector<double> activations;
 			for (int j = 0; j < layers[i].size(); j++) {
 				// compute the activation
@@ -59,7 +59,7 @@ vector<double> TimeDelayNetwork::train(vector<double> target) {
 	vector<double> output, connections = timeSteps;
 		if (timeSteps.size() == inputSize && layers[layers.size() - 1].size() == target.size()) {
 			// start forward pass
-			for (int i = 0; i < (layers.size() - 1); i++) {
+			for (int i = 0; i < (layers.size()); i++) {
 				vector<double> activations;
 				for (int j = 0; j < layers[i].size(); j++) {
 					// compute the activation
@@ -74,14 +74,15 @@ vector<double> TimeDelayNetwork::train(vector<double> target) {
 				weightedError.push_back(output[i] - target[i]);
 			} output = weightedError;
 			for (int i = (layers.size() - 1); i >= 0; i--) {
-				vector<double> errorSum(layers[i].size(), 0);
+				vector<double> errorSum(layers[i][0].weight.size(), 0.0);
 				for (int j = 0; j < layers[i].size(); j++) {
 					// compute the activation
 					vector<double> contribution = layers[i][j].backward(weightedError[j], learningRate);
 					for (int k = 0; k < contribution.size(); k++) {
-						errorSum[i] += contribution[i];
+						errorSum[k] += contribution[k];
 					}
-				} weightedError = errorSum;
+				}
+				weightedError = errorSum;	// error is not passed correctly
 			} learningRate *= decayRate;
 			return output;
 		} else return output;

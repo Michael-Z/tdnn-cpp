@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 
 	int updatePoints = 100;
 	int savePoints = 10;
-	int maxEpoch = 1000;
+	int maxEpoch = 100;
 	double errorBound = 0.01;
 	double mse1 = 0, mse2 = 0;
 	double learningRate = atof(argv[1]), decayRate = atof(argv[2]);
@@ -94,11 +94,11 @@ int main(int argc, char *argv[]) {
 
 
 	Dataset dataset;
-	TimeDelayNetwork network = TimeDelayNetwork(dataset.inputSize, learningRate, decayRate);
+	TimeDelayNetwork network = TimeDelayNetwork(dataset.inputSize * dataset.inputLength, learningRate, decayRate);
 
 
-	for (int i = 0; i < (argc - 4); i++) {
-		network.addLayer(atoi(argv[4 + i]));
+	for (int i = 0; i < (argc - 3); i++) {
+		network.addLayer(atoi(argv[3 + i]));
 	}  network.addLayer(1);
 
 

@@ -16,7 +16,8 @@ Neuron::Neuron(int connections) {
 	normal_distribution<double> d(0, 1);
 	for (int i = 0; i < connections; i++) {
 		weight.push_back(d(g));
-	}
+		//cout << weight[i] << " ";
+	} //cout << endl << endl;
 }
 
 Neuron::~Neuron() {
@@ -45,8 +46,9 @@ double Neuron::forward(vector<double> input) {
 
 	// find the weighted sum of all input
 	for (int i = 0; i < input.size(); i++) {
+		//cout << weight[i] << " ";
 		sum += input[i] * weight[i];
-	}
+	}// cout << " sum : " << sum << " weights : " << weight.size() << endl;
 	activation = activate(sum);
 	activationPrime = activatePrime(sum);
 	return activation;
@@ -57,7 +59,8 @@ vector<double> Neuron::backward(double errorPrime, double learningRate) {
 	// update all weights
 	for (int i = 0; i < weight.size(); i++) {
 		weightedError.push_back(errorPrime * weight[i] * activationPrime);
-		weight[i] -= learningRate * errorPrime * activationPrime * impulse[i];
-	} return weightedError;
+		weight[i] -= learningRate * errorPrime * impulse[i];
+	}
+	return weightedError;
 }
 
