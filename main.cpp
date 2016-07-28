@@ -71,7 +71,7 @@ int main(int argc, char *argv[]) {
 
 	int updatePoints = 100;
 	int savePoints = 10;
-	int maxEpoch = 100;
+	int maxEpoch = 1000;
 	double errorBound = 0.01;
 	double mse1 = 0, mse2 = 0;
 	double learningRate = atof(argv[1]), decayRate = atof(argv[2]);
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
 			(getDate()->tm_year + 1900) << "-" << (getDate()->tm_mon + 1) << "-" << getDate()->tm_mday <<
 			"_Single-Core-TDNN-Error_" << learningRate <<
 			"-learning_" << decayRate << "-decay.csv";
-	ofstream errorData(errorDataFileName.str());
+	ofstream errorData(errorDataFileName.str(), ios::app);
 	if (!errorData.is_open()) return -1;
 
 
@@ -99,10 +99,10 @@ int main(int argc, char *argv[]) {
 
 	for (int i = 0; i < (argc - 3); i++) {
 		network.addLayer(atoi(argv[3 + i]));
-	}  network.addLayer(1);
+	} network.addLayer(1);
 
 
-	for (int e = 0; (e < maxEpoch) && (!e || (((mse1 + mse2)/2) > errorBound)); e++) {
+	for (int e = 0; (e < maxEpoch)/* && (!e || (((mse1 + mse2)/2) > errorBound))*/; e++) {
 		vector<double> error;
 
 		for (int i = 0; i < dataset.inputLength; i++)

@@ -19,14 +19,14 @@ TimeDelayNetwork::~TimeDelayNetwork() {
 }
 
 int TimeDelayNetwork::getPreviousNeurons() {
-	return (layers.size() == 0) ? inputSize : layers[layers.size() - 1].size();
+	return (blocks.size() == 0) ? inputSize : blocks[blocks.size() - 1].size();
 }
 
 void TimeDelayNetwork::addLayer(int size) {
 	vector<Neuron> buffer;
 	for (int i = 0; i < size; i++) {
 		buffer.push_back(Neuron(getPreviousNeurons()));
-	} layers.push_back(buffer);
+	} blocks.push_back(buffer);
 }
 
 void TimeDelayNetwork::loadTimeStep(vector<double> input) {
@@ -42,13 +42,13 @@ vector<double> TimeDelayNetwork::classify() {
 	vector<double> output, connections = timeSteps;
 	if (timeSteps.size() == inputSize) {
 		// calculate activations from bottom up
-		for (int i = 0; i < (layers.size()); i++) {
+		for (int i = 0; i < (blocks.size()); i++) {
 			vector<double> activations;
-			for (int j = 0; j < layers[i].size(); j++) {
+			for (int j = 0; j < blocks[i].size(); j++) {
 				// compute the activation
-				activations.push_back(layers[i][j].forward(connections));
+				activations.push_back(blocks[i][j].forward(connections));
 				// if at top of network, push to output
-				if (i == (layers.size() - 1)) output.push_back(activations[j]);
+				if (i == (blocks.size() - 1)) output.push_back(activations[j]);
 			} connections = activations;
 		}
 		return output;
@@ -57,15 +57,15 @@ vector<double> TimeDelayNetwork::classify() {
 
 vector<double> TimeDelayNetwork::train(vector<double> target) {
 	vector<double> output, connections = timeSteps;
-		if (timeSteps.size() == inputSize && layers[layers.size() - 1].size() == target.size()) {
+		if (timeSteps.size() == inputSize && blocks[blocks.size() - 1].size() == target.size()) {
 			// start forward pass
-			for (int i = 0; i < (layers.size()); i++) {
+			for (int i = 0; i < (blocks.size()); i++) {
 				vector<double> activations;
-				for (int j = 0; j < layers[i].size(); j++) {
+				for (int j = 0; j < blocks[i].size(); j++) {
 					// compute the activation
-					activations.push_back(layers[i][j].forward(connections));
+					activations.push_back(blocks[i][j].forward(connections));
 					// if at top of network, push to output
-					if (i == (layers.size() - 1)) output.push_back(activations[j]);
+					if (i == (blocks.size() - 1)) output.push_back(activations[j]);
 				} connections = activations;
 			}
 			// start backward pass
@@ -73,11 +73,11 @@ vector<double> TimeDelayNetwork::train(vector<double> target) {
 			for (int i = 0; i < output.size(); i++) {
 				weightedError.push_back(output[i] - target[i]);
 			} output = weightedError;
-			for (int i = (layers.size() - 1); i >= 0; i--) {
-				vector<double> errorSum(layers[i][0].weight.size(), 0.0);
-				for (int j = 0; j < layers[i].size(); j++) {
+			for (int i = (blocks.size() - 1); i >= 0; i--) {
+				vector<double> errorSum(blocks[i][0].weight.size(), 0.0);
+				for (int j = 0; j < blocks[i].size(); j++) {
 					// compute the activation
-					vector<double> contribution = layers[i][j].backward(weightedError[j], learningRate);
+					vector<double> contribution = blocks[i][j].backward(weightedError[j], learningRate);
 					for (int k = 0; k < contribution.size(); k++) {
 						errorSum[k] += contribution[k];
 					}

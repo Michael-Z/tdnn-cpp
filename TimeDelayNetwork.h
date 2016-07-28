@@ -17,7 +17,7 @@ private:
 	unsigned int inputSize;
 	double learningRate;
 	double decayRate;
-	vector<vector<Neuron> > layers;
+	vector<vector<Neuron> > blocks;
 	vector<double> timeSteps;
 	int getPreviousNeurons();
 public:
