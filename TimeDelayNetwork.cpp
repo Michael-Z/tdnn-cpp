@@ -34,8 +34,18 @@ void TimeDelayNetwork::loadTimeStep(vector<double> input) {
 		timeSteps.push_back(input[i]);
 }
 
+void TimeDelayNetwork::pushTimeStep(vector<double> input) {
+	timeSteps.erase(timeSteps.begin(), timeSteps.begin() + input.size());
+	for (int i = 0; i < input.size(); i++)
+		timeSteps.push_back(input[i]);
+}
+
 void TimeDelayNetwork::clearTimeSteps() {
 	timeSteps.clear();
+}
+
+int TimeDelayNetwork::getTimeStepSize() {
+	return timeSteps.size();
 }
 
 vector<double> TimeDelayNetwork::classify() {

@@ -27,7 +27,9 @@ public:
 	vector<double> classify();
 	vector<double> train(vector<double> target);
 	void loadTimeStep(vector<double> input);
+	void pushTimeStep(vector<double> input);
 	void clearTimeSteps();
+	int getTimeStepSize();
 };
 
 #endif /* TIMEDELAYNETWORK_H_ */
