@@ -1,6 +1,6 @@
 /**
  *
- * A program to test a Sawtooth Neural Network
+ * A program to test a Time Delay Neural Network
  * Author: Brandon Trabucco
  * Date: 2016/07/27
  *
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 	int frameWindow = 100;
 	int updatePoints = 100;
 	int savePoints = 10;
-	int maxEpoch = 1000;
+	int maxEpoch = 100;
 	double errorBound = 0.01;
 	double mse = 0;
 	double learningRate = atof(argv[1]), decayRate = atof(argv[2]);
@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 	ostringstream errorDataFileName;
 	errorDataFileName << "/u/trabucco/Desktop/Temporal_Convergence_Data_Files/" <<
 			(getDate()->tm_year + 1900) << "-" << (getDate()->tm_mon + 1) << "-" << _day <<
-			"_Single-Core-TDNN-Error_" << learningRate <<
+			"_Multicore-Core-TDNN-Error_" << learningRate <<
 			"-learning_" << decayRate << "-decay.csv";
 	ofstream errorData(errorDataFileName.str(), ios::app);
 	if (!errorData.is_open()) return -1;
@@ -68,11 +68,10 @@ int main(int argc, char *argv[]) {
 	ostringstream accuracyDataFileName;
 	accuracyDataFileName << "/u/trabucco/Desktop/Temporal_Convergence_Data_Files/" <<
 			(getDate()->tm_year + 1900) << "-" << (getDate()->tm_mon + 1) << "-" << _day <<
-			"_Single-Core-TDNN-Accuracy_" << learningRate <<
+			"_Multicore-Core-TDNN-Accuracy_" << learningRate <<
 			"-learning_" << decayRate << "-decay.csv";
 	ofstream accuracyData(accuracyDataFileName.str(), ios::app);
 	if (!accuracyData.is_open()) return -1;
-
 
 	networkStart = getMSec();
 	DatasetAdapter dataset = DatasetAdapter();
@@ -80,7 +79,7 @@ int main(int argc, char *argv[]) {
 	cout << "KTH Dataset loaded in " << (networkEnd - networkStart) << "msecs" << endl;
 
 
-	TimeDelayNetwork network = TimeDelayNetwork(dataset.getFrameSize() * 100, learningRate, decayRate);
+	TimeDelayNetwork network = TimeDelayNetwork(dataset.getFrameSize(), frameWindow, learningRate, decayRate);
 
 
 	for (int i = 0; i < (argc - 3); i++) {
@@ -92,29 +91,25 @@ int main(int argc, char *argv[]) {
 		vector<double> error;
 		networkStart = getMSec();
 		while (dataset.nextTrainingVideo()) {
+			cout << "Loading video" << endl;
 			while (dataset.nextTrainingFrame()) {
 				DatasetExample data = dataset.getTrainingFrame();
-				if (network.getTimeStepSize() < frameWindow) {
-					network.loadTimeStep(data.frame);
-				} else {
-					network.pushTimeStep(data.frame);
-					error = network.train(OutputTarget::getOutputFromTarget(data.label));
-				}
+				network.pushTimeStep(data.frame);
+				error = network.train(OutputTarget::getOutputFromTarget(data.label));
 			}
 		}
 
-		int c = 0;
+		network.clearTimeSteps();
+
+		int c = 0, n = 0;
 		while (dataset.nextTestVideo()) {
 			vector<double> output;
 			while (dataset.nextTestFrame()) {
-				DatasetExample data = dataset.getTrainingFrame();
-				if (network.getTimeStepSize() < frameWindow) {
-					network.loadTimeStep(data.frame);
-				} else {
-					network.pushTimeStep(data.frame);
-					output = network.classify();
-					if (OutputTarget::getTargetFromOutput(output) == data.label) c++;
-				}
+				DatasetExample data = dataset.getTestFrame();
+				network.pushTimeStep(data.frame);
+				output = network.classify();
+				n++;
+				if (OutputTarget::getTargetFromOutput(output) == data.label) c++;
 			}
 		} networkEnd = getMSec();
 
@@ -126,14 +121,17 @@ int main(int argc, char *argv[]) {
 		if (((e + 1) % (maxEpoch / updatePoints)) == 0) {
 			cout << "Epoch " << e << " completed in " << (networkEnd - networkStart) << "msecs" << endl;
 			cout << "Error[" << e << "] = " << mse << endl;
-			cout << "Accuracy[" << e << "] = " << (100.0 * (float)c / (float)dataset.getTestSize()) << endl;
+			cout << "Accuracy[" << e << "] = " << (100.0 * (float)c / (float)n) << endl << endl;
 		} errorData << e << ", " << mse << endl;
-		accuracyData << e << ", " << (100.0 * (float)c / (float)dataset.getTestSize()) << endl;
+		accuracyData << e << ", " << (100.0 * (float)c / (float)n) << endl;
 
 		dataset.reset();
 	}
 
 	errorData.close();
+	accuracyData.close();
+
+	cout << "Program finished" << endl;
 
 	return 0;
 }

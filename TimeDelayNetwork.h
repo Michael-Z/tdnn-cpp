@@ -10,23 +10,24 @@
 
 #include <vector>
 #include "Neuron.h"
+#include <omp.h>
 using namespace std;
 
 class TimeDelayNetwork {
 private:
-	unsigned int inputSize;
+	int inputSize;
+	int frameWindow;
 	double learningRate;
 	double decayRate;
-	vector<vector<Neuron> > blocks;
+	vector<vector<Neuron> > layers;
 	vector<double> timeSteps;
 	int getPreviousNeurons();
 public:
-	TimeDelayNetwork(int is, double l, double d);
+	TimeDelayNetwork(int is, int fw, double l, double d);
 	virtual ~TimeDelayNetwork();
 	void addLayer(int size);
 	vector<double> classify();
 	vector<double> train(vector<double> target);
-	void loadTimeStep(vector<double> input);
 	void pushTimeStep(vector<double> input);
 	void clearTimeSteps();
 	int getTimeStepSize();
