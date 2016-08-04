@@ -9,15 +9,17 @@
 
 long long Neuron::n = 0;
 
-Neuron::Neuron(int connections) {
+Neuron::Neuron(int nConnections) {
 	// TODO Auto-generated constructor stub
 	activation = 0; activationPrime = 0;
+	connections = nConnections;
 	default_random_engine g(time(0) + (n++));
 	normal_distribution<double> d(0, 1);
+	weight = (double *)malloc(sizeof(double) * nConnections);
+	impulse = (double *)calloc(nConnections, sizeof(double));
 	for (int i = 0; i < connections; i++) {
-		weight.push_back(d(g));
-		//cout << weight[i] << " ";
-	} //cout << endl << endl;
+		weight[i] = (d(g));
+	}
 }
 
 Neuron::~Neuron() {
@@ -40,12 +42,12 @@ double Neuron::activatePrime(double input) {
 	return (1 - (tanh(input) * tanh(input)));
 }
 
-double Neuron::forward(vector<double> input) {
+double Neuron::forward(double *input) {
 	double sum = 0;
-	impulse = input;
+	memcpy(impulse, input, (sizeof(double) * connections));
 
 	// find the weighted sum of all input
-	for (int i = 0; i < input.size(); i++) {
+	for (int i = 0; i < connections; i++) {
 		//cout << weight[i] << " ";
 		sum += input[i] * weight[i];
 	}// cout << " sum : " << sum << " weights : " << weight.size() << endl;
@@ -54,11 +56,12 @@ double Neuron::forward(vector<double> input) {
 	return activation;
 }
 
-vector<double> Neuron::backward(double errorPrime, double learningRate) {
-	vector<double> weightedError;
+double *Neuron::backward(double errorPrime, double learningRate) {
+	double *weightedError;
+	weightedError = (double *)malloc(sizeof(double) * connections);
 	// update all weights
-	for (int i = 0; i < weight.size(); i++) {
-		weightedError.push_back(errorPrime * weight[i] * activationPrime);
+	for (int i = 0; i < connections; i++) {
+		weightedError[i] = (errorPrime * weight[i] * activationPrime);
 		weight[i] -= learningRate * errorPrime * impulse[i];
 	}
 	return weightedError;

@@ -12,6 +12,8 @@
 #include <vector>
 #include <time.h>
 #include <iostream>
+#include <stdlib.h>
+#include <string.h>
 #include <random>
 using namespace std;
 
@@ -23,14 +25,15 @@ private:
 	double activate(double input);
 	double activatePrime(double input);
 public:
-	vector<double> weight;
-	vector<double> impulse;
+	double *weight;
+	double *impulse;
 	double activation;
 	double activationPrime;
-	Neuron(int connections);
+	int connections;
+	Neuron(int nConnections);
 	~Neuron();
-	double forward(vector<double> input);
-	vector<double> backward(double errorPrime, double learningRate);
+	double forward(double *input);
+	double *backward(double errorPrime, double learningRate);
 };
 
 #endif /* NEURON_H_ */

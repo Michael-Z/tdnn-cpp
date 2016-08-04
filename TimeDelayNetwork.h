@@ -9,7 +9,9 @@
 #define TIMEDELAYNETWORK_H_
 
 #include <vector>
+#include <stdlib.h>
 #include "Neuron.h"
+#include <string.h>
 #include <omp.h>
 using namespace std;
 

@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 	ostringstream errorDataFileName;
 	errorDataFileName << "/u/trabucco/Desktop/Temporal_Convergence_Data_Files/" <<
 			(getDate()->tm_year + 1900) << "-" << (getDate()->tm_mon + 1) << "-" << _day <<
-			"_Multicore-Core-TDNN-Error_" << learningRate <<
+			"_Multicore-TDNN-Error_" << learningRate <<
 			"-learning_" << decayRate << "-decay.csv";
 	ofstream errorData(errorDataFileName.str(), ios::app);
 	if (!errorData.is_open()) return -1;
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
 	ostringstream accuracyDataFileName;
 	accuracyDataFileName << "/u/trabucco/Desktop/Temporal_Convergence_Data_Files/" <<
 			(getDate()->tm_year + 1900) << "-" << (getDate()->tm_mon + 1) << "-" << _day <<
-			"_Multicore-Core-TDNN-Accuracy_" << learningRate <<
+			"_Multicore-TDNN-Accuracy_" << learningRate <<
 			"-learning_" << decayRate << "-decay.csv";
 	ofstream accuracyData(accuracyDataFileName.str(), ios::app);
 	if (!accuracyData.is_open()) return -1;
@@ -96,6 +96,11 @@ int main(int argc, char *argv[]) {
 				DatasetExample data = dataset.getTrainingFrame();
 				network.pushTimeStep(data.frame);
 				error = network.train(OutputTarget::getOutputFromTarget(data.label));
+				mse = 0;
+				for (int i = 0; i < error.size(); i++)
+					mse += error[i] * error[i];
+				mse /= error.size() * 2;
+				cout << "Error " << mse << endl;
 			}
 		}
 

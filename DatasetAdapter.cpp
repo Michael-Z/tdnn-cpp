@@ -10,20 +10,10 @@
 DatasetAdapter::DatasetAdapter() {
 	// TODO Auto-generated constructor stub
 
-	ifstream trainingDatasetFile("/stash/tlab/datasets/KTH/binary/training_dataset.bin", ios::in | ios::binary);
-	ifstream testDatasetFile("/stash/tlab/datasets/KTH/binary/test_dataset.bin", ios::in | ios::binary);
-	ifstream trainingLabelsFile("/stash/tlab/datasets/KTH/binary/training_labels.bin", ios::in | ios::binary);
-	ifstream testLabelsFile("/stash/tlab/datasets/KTH/binary/test_labels.bin", ios::in | ios::binary);
-
-	streampos trainingDatasetFileSize;
-	streampos testDatasetFileSize;
-	streampos trainingLabelsFileSize;
-	streampos testLabelsFileSize;
-
-	char *trainingDatasetFileData;
-	char *testDatasetFileData;
-	char *trainingLabelsFileData;
-	char *testLabelsFileData;
+	ifstream trainingDatasetFile("/stash/tlab/datasets/KTH/binary/training_dataset.txt");
+	ifstream testDatasetFile("/stash/tlab/datasets/KTH/binary/test_dataset.txt");
+	ifstream trainingLabelsFile("/stash/tlab/datasets/KTH/binary/training_labels.txt");
+	ifstream testLabelsFile("/stash/tlab/datasets/KTH/binary/test_labels.txt");
 
 	trainingIndex = -1;
 	testIndex = -1;
@@ -34,93 +24,65 @@ DatasetAdapter::DatasetAdapter() {
 			testDatasetFile.is_open() &&
 			trainingLabelsFile.is_open() &&
 			testLabelsFile.is_open()) {
-		trainingDatasetFile.seekg(0, ios::end);
-		testDatasetFile.seekg(0, ios::end);
-		trainingLabelsFile.seekg(0, ios::end);
-		testLabelsFile.seekg(0, ios::end);
+		while (!trainingLabelsFile.eof()) {
+			int buffer;
+			trainingLabelsFile >> buffer;
+			//cout << "Label: " << buffer << endl;
+			dataset.trainingLabels.push_back(buffer);
+		}
 
-		trainingDatasetFileSize = trainingDatasetFile.tellg();
-		testDatasetFileSize = testDatasetFile.tellg();
-		trainingLabelsFileSize = trainingLabelsFile.tellg();
-		testLabelsFileSize = testLabelsFile.tellg();
+		cout << dataset.trainingLabels.size() << " Training labels loaded" << endl;
 
-		trainingDatasetFileData = new char[trainingDatasetFileSize];
-		testDatasetFileData = new char[testDatasetFileSize];
-		trainingLabelsFileData = new char[trainingLabelsFileSize];
-		testLabelsFileData = new char[testLabelsFileSize];
+		while (!testLabelsFile.eof()) {
+			int buffer;
+			testLabelsFile >> buffer;
+			dataset.testLabels.push_back(buffer);
+		}
 
-		trainingDatasetFile.seekg(0, ios::beg);
-		testDatasetFile.seekg(0, ios::beg);
-		trainingLabelsFile.seekg(0, ios::beg);
-		testLabelsFile.seekg(0, ios::beg);
+		cout << "Test labels loaded" << endl;
 
-		trainingDatasetFile.read(trainingDatasetFileData, trainingDatasetFileSize);
-		testDatasetFile.read(testDatasetFileData, testDatasetFileSize);
-		trainingLabelsFile.read(trainingLabelsFileData, trainingLabelsFileSize);
-		testLabelsFile.read(testLabelsFileData, testLabelsFileSize);
+		vector<double> video;
+		while (!trainingDatasetFile.eof()) {
+			int buffer;
+			trainingDatasetFile >> buffer;
+			if (buffer == -1) {
+				// end of frame
 
-		if (trainingDatasetFile.fail()) cout << "Read failure" << endl;
-		if (testDatasetFile.fail()) cout << "Read failure" << endl;
-		if (trainingLabelsFile.fail()) cout << "Read failure" << endl;
-		if (testLabelsFile.fail()) cout << "Read failure" << endl;
+			} else if (buffer == -2) {
+				// end of video
+				dataset.trainingVideos.push_back(video);
+				video.clear();
+			} else {
+				// inside a frame
+				video.push_back(buffer);
+			}
+		} video.clear();
+
+		cout << "Training videos loaded" << endl;
+
+		while (!testDatasetFile.eof()) {
+			int buffer;
+			testDatasetFile >> buffer;
+			if (buffer == -1) {
+				// end of frame
+
+			} else if (buffer == -2) {
+				// end of video
+				dataset.testVideos.push_back(video);
+				video.clear();
+			} else {
+				// inside a frame
+				video.push_back(buffer);
+			}
+		}
+
+		cout << "Test videos loaded" << endl;
 
 		trainingDatasetFile.close();
 		testDatasetFile.close();
 		trainingLabelsFile.close();
 		testLabelsFile.close();
 	} else cout << "Error opening files" << endl;
-
-
-	// copy the labels and images
-	for (int i = 0; i < trainingLabelsFileSize; i++) {
-		dataset.trainingLabels.push_back((int)trainingLabelsFileData[i]);
-	}
-
-	cout << "Imported training labels" << endl;
-
-	for (int i = 0; i < testLabelsFileSize; i++) {
-		dataset.testLabels.push_back((int)testLabelsFileData[i]);
-	}
-
-	cout << "Imported test labels" << endl;
-
-	vector<double> buffer;
-	for (int i = 0; i < (trainingDatasetFileSize / encodedSize); i++) {
-		for (int j = 0; j < encodedSize; j++) {
-			if (j == (encodedSize - 1)) {
-				if (trainingDatasetFileData[(i * encodedSize) + j] == videoEnd) {
-					dataset.trainingVideos.push_back(buffer);
-					buffer.clear();
-				}
-			} else {
-				unsigned int value = trainingDatasetFileData[(i * encodedSize) + j];
-				buffer.push_back((((double)value / (double)range) > 0.5) ? 1.0 : 0.0);
-			}
-		}
-	}
-
-	cout << "Imported training videos" << endl;
-
-	for (int i = 0; i < (testDatasetFileSize / encodedSize); i++) {
-		for (int j = 0; j < encodedSize; j++) {
-			if (j == (encodedSize - 1)) {
-				if (testDatasetFileData[(i * encodedSize) + j] == videoEnd) {
-					dataset.testVideos.push_back(buffer);
-					buffer.clear();
-				}
-			} else {
-				unsigned int value = testDatasetFileData[(i * encodedSize) + j];
-				buffer.push_back((((double)value / (double)range) > 0.5) ? 1.0 : 0.0);
-			}
-		}
-	}
-
-	cout << "Imported test videos" << endl;
-
-	delete[] trainingDatasetFileData;
-	delete[] testDatasetFileData;
-	delete[] trainingLabelsFileData;
-	delete[] testLabelsFileData;
 }
 
 DatasetAdapter::~DatasetAdapter() {
@@ -160,6 +122,7 @@ bool DatasetAdapter::nextTestFrame() {
 }
 
 bool DatasetAdapter::isLastTrainingFrame() {
+	//cout << trainingFrameIndex << " " << (dataset.trainingVideos[trainingIndex].size() - 1) << endl;
 	return (trainingFrameIndex == ((dataset.trainingVideos[trainingIndex].size() / frameSize) - 1));
 }
 
