@@ -96,11 +96,6 @@ int main(int argc, char *argv[]) {
 				DatasetExample data = dataset.getTrainingFrame();
 				network.pushTimeStep(data.frame);
 				error = network.train(OutputTarget::getOutputFromTarget(data.label));
-				mse = 0;
-				for (int i = 0; i < error.size(); i++)
-					mse += error[i] * error[i];
-				mse /= error.size() * 2;
-				cout << "Error " << mse << endl;
 			}
 		}
 
