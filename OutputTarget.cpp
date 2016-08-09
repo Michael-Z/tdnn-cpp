@@ -7,17 +7,25 @@
 
 #include "OutputTarget.h"
 
-const double OutputTarget::classifiers[classes][nodes] = {
-		{1, -1, -1, -1, -1, -1},
-		{-1, 1, -1, -1, -1, -1},
-		{-1, -1, 1, -1, -1, -1},
-		{-1, -1, -1, 1, -1, -1},
-		{-1, -1, -1, -1, 1, -1},
-		{-1, -1, -1, -1, -1, 1}
-};
+OutputTarget::OutputTarget(int n, int c) {
+	nodes = n;
+	classes = c;
+
+	for (int i = 0; i < c; i++) {
+		vector<double> temp;
+		for (int j = 0; j < n; j++) {
+			if (i == j) temp.push_back(1.0);
+			else temp.push_back(-1.0);
+		} classifiers.push_back(temp);
+	}
+}
+
+OutputTarget::~OutputTarget() {
+
+}
 
 vector<double> OutputTarget::getOutputFromTarget(int c) {
-	return vector<double>(classifiers[c], classifiers[c] + nodes);
+	return classifiers[c];
 }
 
 int OutputTarget::getTargetFromOutput(vector<double> output) {

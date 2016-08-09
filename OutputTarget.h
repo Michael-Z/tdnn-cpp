@@ -16,12 +16,14 @@ using namespace std;
 
 class OutputTarget {
 private:
-	static const int nodes = 6;
-	static const int classes = 6;
-	static const double classifiers[classes][nodes];
+	int nodes = 256;
+	int classes = 256;
+	vector<vector<double> > classifiers;
 public:
-	static vector<double> getOutputFromTarget(int c);
-	static int getTargetFromOutput(vector<double> output);
+	OutputTarget(int n, int c);
+	~OutputTarget();
+	vector<double> getOutputFromTarget(int c);
+	int getTargetFromOutput(vector<double> output);
 };
 
 #endif /* OUTPUTTARGET_H_ */

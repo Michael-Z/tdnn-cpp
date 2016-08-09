@@ -62,7 +62,7 @@ vector<double> TimeDelayNetwork::classify() {
 		} connections = (double *)realloc(connections, (sizeof(double) * layers[i].size()));
 		memcpy(&connections[0], &activations[0], sizeof(double) * layers[i].size());
 		free(activations);
-	} vector<double> result(&output[0], &output[layers[layers.size() - 1].size() - 1]);
+	} vector<double> result(&output[0], &output[layers[layers.size() - 1].size()]);
 	free(output);
 	free(connections);
 	return result;
@@ -107,7 +107,7 @@ vector<double> TimeDelayNetwork::train(vector<double> target) {
 			memcpy(&weightedError[0], &errorSum[0], (sizeof(double) * layers[i][0].connections));
 			free(errorSum);
 		} learningRate *= decayRate;
-		vector<double> result(&output[0], &output[layers[layers.size() - 1].size() - 1]);
+		vector<double> result(&output[0], &output[layers[layers.size() - 1].size()]);
 		free(weightedError);
 		free(output);
 		return result;
